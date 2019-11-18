@@ -30,8 +30,18 @@ void apply_layer(mini_nn_layer_t* layer, const float *input, float *output)
 
 void fc_layer(const float *input,  const unsigned int input_len, const unsigned int output_len, const float *weights, float *output)
 {
-    DSPF_sp_mat_mul(input, input_len, 1, weights,
-        output_len, output);
+    DSPF_sp_mat_mul(weights, output_len, input_len, input, 1, output);
+}
+
+void norm_layer(const float *input,  const unsigned int input_len, const unsigned int output_len, const float *weights, float *output)
+{
+    //Weights are structured as: [scale, offset][scale,offset]...
+    mini_nn_scaler_weights_t *scaler_weights = (mini_nn_scaler_weights_t*) weights;
+
+    for( int i = 0; i < input_len; i++)
+    {
+        output[i] = (input[i] - scaler_weights[i].offset) * scaler_weights[i].scale;
+    }
 }
 
 /* Activation functions */
